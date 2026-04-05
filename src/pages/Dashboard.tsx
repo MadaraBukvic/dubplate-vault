@@ -5,12 +5,91 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, Music, DollarSign, BarChart3 } from "lucide-react";
-import { mockTracks } from "@/data/mockTracks";
+import { Upload, Music, DollarSign, BarChart3, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
-  const producerTracks = mockTracks.filter((t) => t.producer === "KRVN");
-  const totalEarnings = producerTracks.reduce((sum, t) => sum + t.price * t.copiesSold, 0);
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const [title, setTitle] = useState("");
+  const [bpm, setBpm] = useState("140");
+  const [trackKey, setTrackKey] = useState("Am");
+  const [genre, setGenre] = useState("Dubstep");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("45");
+  const [exclusivity, setExclusivity] = useState<"single" | "limited">("single");
+  const [maxCopies, setMaxCopies] = useState("1");
+
+  // Redirect non-producers
+  if (user && profile && profile.role !== "producer") {
+    navigate("/marketplace");
+    return null;
+  }
+
+  // Fetch producer's tracks
+  const { data: tracks = [], isLoading } = useQuery({
+    queryKey: ["producer-tracks", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("tracks")
+        .select("*")
+        .eq("producer_id", user.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Upload track mutation
+  const uploadMutation = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("Not authenticated");
+      const { error } = await supabase.from("tracks").insert({
+        producer_id: user.id,
+        title,
+        bpm: parseInt(bpm),
+        key: trackKey,
+        genre,
+        description: description || null,
+        price_eur: parseFloat(price),
+        exclusivity_type: exclusivity,
+        max_copies: exclusivity === "single" ? 1 : parseInt(maxCopies),
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Track uploaded successfully!");
+      queryClient.invalidateQueries({ queryKey: ["producer-tracks"] });
+      setTitle("");
+      setDescription("");
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const totalSales = tracks.reduce((s, t) => s + (t.copies_sold || 0), 0);
+  const totalEarnings = tracks.reduce((s, t) => s + (Number(t.price_eur) * (t.copies_sold || 0)), 0);
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-24 text-center">
+          <p className="font-mono text-sm text-muted-foreground">Please sign in as a producer to access the dashboard.</p>
+          <Button variant="gold-outline" size="sm" className="mt-4" onClick={() => navigate("/auth")}>Sign In</Button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -24,8 +103,8 @@ const Dashboard = () => {
         {/* Stats */}
         <div className="mb-12 grid gap-4 sm:grid-cols-3">
           {[
-            { label: "Tracks", value: producerTracks.length, icon: Music },
-            { label: "Total Sales", value: producerTracks.reduce((s, t) => s + t.copiesSold, 0), icon: BarChart3 },
+            { label: "Tracks", value: tracks.length, icon: Music },
+            { label: "Total Sales", value: totalSales, icon: BarChart3 },
             { label: "Earnings", value: `€${totalEarnings}`, icon: DollarSign },
           ].map((stat) => (
             <div key={stat.label} className="rounded-lg border border-border bg-card p-6">
@@ -42,45 +121,48 @@ const Dashboard = () => {
           {/* Upload Form */}
           <div>
             <h2 className="font-display text-2xl font-semibold text-foreground mb-6">Upload Track</h2>
-            <div className="rounded-lg border border-border bg-card p-6 space-y-4">
-              <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-border bg-surface p-12 transition-colors hover:border-gold/30">
-                <div className="text-center">
-                  <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                  <p className="font-mono text-xs text-muted-foreground">Drop MP3/WAV here (max 50MB)</p>
-                </div>
-              </div>
+            <form
+              onSubmit={(e) => { e.preventDefault(); uploadMutation.mutate(); }}
+              className="rounded-lg border border-border bg-card p-6 space-y-4"
+            >
               <div>
                 <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Title</Label>
-                <Input className="mt-1.5 bg-surface border-border font-mono text-sm" placeholder="Track title" />
+                <Input
+                  className="mt-1.5 bg-surface border-border font-mono text-sm"
+                  placeholder="Track title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">BPM</Label>
-                  <Input type="number" className="mt-1.5 bg-surface border-border font-mono text-sm" placeholder="140" />
+                  <Input type="number" className="mt-1.5 bg-surface border-border font-mono text-sm" value={bpm} onChange={(e) => setBpm(e.target.value)} required />
                 </div>
                 <div>
                   <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Key</Label>
-                  <Input className="mt-1.5 bg-surface border-border font-mono text-sm" placeholder="Am" />
+                  <Input className="mt-1.5 bg-surface border-border font-mono text-sm" value={trackKey} onChange={(e) => setTrackKey(e.target.value)} required />
                 </div>
                 <div>
                   <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Genre</Label>
-                  <Input className="mt-1.5 bg-surface border-border font-mono text-sm" placeholder="Dubstep" />
+                  <Input className="mt-1.5 bg-surface border-border font-mono text-sm" value={genre} onChange={(e) => setGenre(e.target.value)} required />
                 </div>
               </div>
               <div>
                 <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Description</Label>
-                <Textarea className="mt-1.5 bg-surface border-border font-mono text-sm" rows={3} placeholder="Describe your track..." />
+                <Textarea className="mt-1.5 bg-surface border-border font-mono text-sm" rows={3} placeholder="Describe your track..." value={description} onChange={(e) => setDescription(e.target.value)} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Price (EUR)</Label>
-                  <Input type="number" className="mt-1.5 bg-surface border-border font-mono text-sm" placeholder="45" />
+                  <Input type="number" className="mt-1.5 bg-surface border-border font-mono text-sm" value={price} onChange={(e) => setPrice(e.target.value)} required />
                 </div>
                 <div>
                   <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Exclusivity</Label>
-                  <Select>
+                  <Select value={exclusivity} onValueChange={(v) => setExclusivity(v as "single" | "limited")}>
                     <SelectTrigger className="mt-1.5 bg-surface border-border font-mono text-xs">
-                      <SelectValue placeholder="Select" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="single" className="font-mono text-xs">Single Buyer (1 of 1)</SelectItem>
@@ -89,31 +171,48 @@ const Dashboard = () => {
                   </Select>
                 </div>
               </div>
-              <Button variant="gold" className="w-full text-sm">Upload Track</Button>
-            </div>
+              {exclusivity === "limited" && (
+                <div>
+                  <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Max Copies</Label>
+                  <Input type="number" className="mt-1.5 bg-surface border-border font-mono text-sm" value={maxCopies} onChange={(e) => setMaxCopies(e.target.value)} min="2" required />
+                </div>
+              )}
+              <Button variant="gold" className="w-full text-sm" disabled={uploadMutation.isPending}>
+                {uploadMutation.isPending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading...</> : "Upload Track"}
+              </Button>
+            </form>
           </div>
 
           {/* My Tracks */}
           <div>
             <h2 className="font-display text-2xl font-semibold text-foreground mb-6">My Tracks</h2>
-            <div className="space-y-3">
-              {producerTracks.map((track) => (
-                <div key={track.id} className="rounded-lg border border-border bg-card p-4 flex items-center justify-between">
-                  <div>
-                    <h3 className="font-display text-sm font-semibold text-foreground">{track.title}</h3>
-                    <p className="font-mono text-[10px] text-muted-foreground mt-0.5">
-                      {track.bpm} BPM · {track.musicalKey} · {track.genre}
-                    </p>
+            {isLoading ? (
+              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 text-gold animate-spin" /></div>
+            ) : tracks.length === 0 ? (
+              <div className="py-12 text-center">
+                <Music className="mx-auto h-8 w-8 text-muted-foreground mb-3" />
+                <p className="font-mono text-xs text-muted-foreground">No tracks uploaded yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {tracks.map((track) => (
+                  <div key={track.id} className="rounded-lg border border-border bg-card p-4 flex items-center justify-between">
+                    <div>
+                      <h3 className="font-display text-sm font-semibold text-foreground">{track.title}</h3>
+                      <p className="font-mono text-[10px] text-muted-foreground mt-0.5">
+                        {track.bpm} BPM · {track.key} · {track.genre}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-mono text-sm font-semibold text-gold">€{track.price_eur}</p>
+                      <p className="font-mono text-[10px] text-muted-foreground">
+                        {track.copies_sold}/{track.max_copies} sold
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-mono text-sm font-semibold text-gold">€{track.price}</p>
-                    <p className="font-mono text-[10px] text-muted-foreground">
-                      {track.copiesSold}/{track.maxCopies} sold
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

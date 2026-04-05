@@ -1,37 +1,40 @@
 import { Badge } from "@/components/ui/badge";
 import { Play, Pause } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
 export interface Track {
   id: string;
   title: string;
-  producer: string;
+  producer_id: string;
+  producer_name?: string;
   bpm: number;
-  musicalKey: string;
+  key: string;
   genre: string;
-  price: number;
-  exclusivityType: "single" | "limited";
-  maxCopies: number;
-  copiesSold: number;
+  price_eur: number;
+  exclusivity_type: "single" | "limited";
+  max_copies: number;
+  copies_sold: number;
+  description?: string | null;
+  preview_path?: string | null;
+  storage_path?: string | null;
+  created_at?: string;
 }
 
 const TrackCard = ({ track }: { track: Track }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const remaining = track.maxCopies - track.copiesSold;
+  const remaining = track.max_copies - track.copies_sold;
   const isSoldOut = remaining <= 0;
 
   return (
     <Link to={`/track/${track.id}`} className="group block">
       <div className="rounded-lg border border-border bg-card p-4 transition-all duration-300 hover:border-gold/30 hover:bg-surface-hover">
-        {/* Top row */}
         <div className="mb-3 flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <h3 className="font-display text-lg font-semibold text-foreground truncate group-hover:text-gold transition-colors">
               {track.title}
             </h3>
-            <p className="font-mono text-xs text-muted-foreground mt-0.5">{track.producer}</p>
+            <p className="font-mono text-xs text-muted-foreground mt-0.5">{track.producer_name || "Unknown"}</p>
           </div>
           <button
             onClick={(e) => { e.preventDefault(); setIsPlaying(!isPlaying); }}
@@ -41,23 +44,21 @@ const TrackCard = ({ track }: { track: Track }) => {
           </button>
         </div>
 
-        {/* Metadata */}
         <div className="mb-4 flex flex-wrap gap-2">
           <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded">
             {track.bpm} BPM
           </span>
           <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded">
-            {track.musicalKey}
+            {track.key}
           </span>
           <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded">
             {track.genre}
           </span>
         </div>
 
-        {/* Bottom row */}
         <div className="flex items-center justify-between">
           <span className="font-mono text-lg font-semibold text-gold">
-            €{track.price}
+            €{track.price_eur}
           </span>
           <Badge
             variant={isSoldOut ? "secondary" : "default"}
@@ -68,9 +69,9 @@ const TrackCard = ({ track }: { track: Track }) => {
           >
             {isSoldOut
               ? "Sold Out"
-              : track.exclusivityType === "single"
+              : track.exclusivity_type === "single"
                 ? "1 of 1"
-                : `${remaining} of ${track.maxCopies}`
+                : `${remaining} of ${track.max_copies}`
             }
           </Badge>
         </div>
