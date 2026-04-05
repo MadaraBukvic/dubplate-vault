@@ -1,10 +1,18 @@
-import { Link } from "react-router-dom";
-import { Disc3, Menu, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Disc3, Menu, X, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
@@ -21,12 +29,31 @@ const Navbar = () => {
           <Link to="/marketplace" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-gold">
             Marketplace
           </Link>
-          <Link to="/dashboard" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-gold">
-            For Producers
-          </Link>
-          <Link to="/auth" className="ml-4">
-            <Button variant="gold-outline" size="sm">Sign In</Button>
-          </Link>
+          {user && profile?.role === "producer" && (
+            <Link to="/dashboard" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-gold">
+              Dashboard
+            </Link>
+          )}
+          {user && (
+            <Link to="/library" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-gold">
+              My Library
+            </Link>
+          )}
+          {user ? (
+            <div className="flex items-center gap-4 ml-4">
+              <span className="font-mono text-xs text-muted-foreground">
+                {profile?.display_name || user.email}
+              </span>
+              <Button variant="gold-outline" size="sm" onClick={handleSignOut}>
+                <LogOut className="h-3.5 w-3.5 mr-1.5" />
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <Link to="/auth" className="ml-4">
+              <Button variant="gold-outline" size="sm">Sign In</Button>
+            </Link>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -42,12 +69,26 @@ const Navbar = () => {
             <Link to="/marketplace" className="font-mono text-sm uppercase tracking-widest text-muted-foreground" onClick={() => setIsOpen(false)}>
               Marketplace
             </Link>
-            <Link to="/dashboard" className="font-mono text-sm uppercase tracking-widest text-muted-foreground" onClick={() => setIsOpen(false)}>
-              For Producers
-            </Link>
-            <Link to="/auth" onClick={() => setIsOpen(false)}>
-              <Button variant="gold" size="sm" className="w-full">Sign In</Button>
-            </Link>
+            {user && profile?.role === "producer" && (
+              <Link to="/dashboard" className="font-mono text-sm uppercase tracking-widest text-muted-foreground" onClick={() => setIsOpen(false)}>
+                Dashboard
+              </Link>
+            )}
+            {user && (
+              <Link to="/library" className="font-mono text-sm uppercase tracking-widest text-muted-foreground" onClick={() => setIsOpen(false)}>
+                My Library
+              </Link>
+            )}
+            {user ? (
+              <Button variant="gold" size="sm" className="w-full" onClick={() => { handleSignOut(); setIsOpen(false); }}>
+                <LogOut className="h-3.5 w-3.5 mr-1.5" />
+                Sign Out
+              </Button>
+            ) : (
+              <Link to="/auth" onClick={() => setIsOpen(false)}>
+                <Button variant="gold" size="sm" className="w-full">Sign In</Button>
+              </Link>
+            )}
           </div>
         </div>
       )}
