@@ -14,7 +14,172 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      licenses: {
+        Row: {
+          id: string
+          purchase_id: string
+          signed_at: string
+          terms_text: string
+        }
+        Insert: {
+          id?: string
+          purchase_id: string
+          signed_at?: string
+          terms_text?: string
+        }
+        Update: {
+          id?: string
+          purchase_id?: string
+          signed_at?: string
+          terms_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "licenses_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      purchases: {
+        Row: {
+          buyer_id: string
+          created_at: string
+          download_count: number
+          id: string
+          license_token: string
+          stripe_payment_id: string | null
+          track_id: string
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string
+          download_count?: number
+          id?: string
+          license_token?: string
+          stripe_payment_id?: string | null
+          track_id: string
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string
+          download_count?: number
+          id?: string
+          license_token?: string
+          stripe_payment_id?: string | null
+          track_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "purchases_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tracks: {
+        Row: {
+          bpm: number
+          copies_sold: number
+          created_at: string
+          description: string | null
+          exclusivity_type: Database["public"]["Enums"]["exclusivity_type"]
+          genre: string
+          id: string
+          key: string
+          max_copies: number
+          preview_path: string | null
+          price_eur: number
+          producer_id: string
+          storage_path: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          bpm?: number
+          copies_sold?: number
+          created_at?: string
+          description?: string | null
+          exclusivity_type?: Database["public"]["Enums"]["exclusivity_type"]
+          genre?: string
+          id?: string
+          key?: string
+          max_copies?: number
+          preview_path?: string | null
+          price_eur?: number
+          producer_id: string
+          storage_path?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          bpm?: number
+          copies_sold?: number
+          created_at?: string
+          description?: string | null
+          exclusivity_type?: Database["public"]["Enums"]["exclusivity_type"]
+          genre?: string
+          id?: string
+          key?: string
+          max_copies?: number
+          preview_path?: string | null
+          price_eur?: number
+          producer_id?: string
+          storage_path?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracks_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +188,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      app_role: "producer" | "dj"
+      exclusivity_type: "single" | "limited"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +316,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["producer", "dj"],
+      exclusivity_type: ["single", "limited"],
+    },
   },
 } as const
