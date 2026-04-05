@@ -43,7 +43,7 @@ const PaymentSuccess = () => {
         <div className="w-full max-w-md text-center">
           {status === "verifying" && (
             <>
-              <Loader2 className="mx-auto h-12 w-12 text-gold animate-spin" />
+              <Loader2 className="mx-auto h-12 w-12 text-primary animate-spin" />
               <h1 className="mt-6 font-display text-3xl font-bold text-foreground">Verifying Payment...</h1>
               <p className="mt-2 font-mono text-xs text-muted-foreground">Please wait while we confirm your purchase.</p>
             </>
@@ -51,10 +51,10 @@ const PaymentSuccess = () => {
 
           {status === "success" && (
             <>
-              <CheckCircle className="mx-auto h-12 w-12 text-gold" />
+              <CheckCircle className="mx-auto h-12 w-12 text-primary" />
               <h1 className="mt-6 font-display text-3xl font-bold text-foreground">Purchase Complete!</h1>
               <p className="mt-2 font-mono text-xs text-muted-foreground">
-                Your exclusive dubplate is now in your library. A unique license token has been generated.
+                Your exclusive track is now in your library. A unique license token has been generated.
               </p>
               <div className="mt-8 flex flex-col gap-3">
                 <Link to="/library">

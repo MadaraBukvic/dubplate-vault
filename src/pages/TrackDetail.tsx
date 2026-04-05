@@ -18,7 +18,6 @@ const TrackDetail = () => {
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Try DB first, fallback to mock
   const { data: dbTrack } = useQuery({
     queryKey: ["track-detail", id],
     queryFn: async () => {
@@ -91,7 +90,7 @@ const TrackDetail = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-16">
-        <Link to="/marketplace" className="mb-8 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground hover:text-gold transition-colors">
+        <Link to="/marketplace" className="mb-8 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors">
           <ArrowLeft className="h-3 w-3" /> Back
         </Link>
 
@@ -106,7 +105,7 @@ const TrackDetail = () => {
           </div>
 
           <div>
-            <Badge className="font-mono text-[10px] uppercase tracking-wider bg-gold/10 text-gold border-gold/20 mb-4">
+            <Badge className="font-mono text-[10px] uppercase tracking-wider bg-primary/10 text-primary border-primary/20 mb-4">
               {isSoldOut ? "Sold Out" : track.exclusivity_type === "single" ? "1 of 1 · Exclusive" : `${remaining} of ${track.max_copies} remaining`}
             </Badge>
 
@@ -123,7 +122,7 @@ const TrackDetail = () => {
 
             <div className="mt-8 rounded-lg border border-border bg-surface p-6">
               <div className="flex items-baseline justify-between">
-                <span className="font-mono text-3xl font-bold text-gold">€{track.price_eur}</span>
+                <span className="font-mono text-3xl font-bold text-primary">€{track.price_eur}</span>
                 <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">one-time payment</span>
               </div>
 
@@ -134,7 +133,7 @@ const TrackDetail = () => {
               </Button>
 
               <div className="mt-4 flex items-start gap-2">
-                <Shield className="mt-0.5 h-3 w-3 shrink-0 text-gold" />
+                <Shield className="mt-0.5 h-3 w-3 shrink-0 text-primary" />
                 <p className="font-mono text-[10px] leading-relaxed text-muted-foreground">
                   This purchase includes a unique license token. The track file will be watermarked with your identity. Redistribution is traceable.
                 </p>

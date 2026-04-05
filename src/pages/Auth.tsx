@@ -19,7 +19,6 @@ const Auth = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Redirect if already logged in
   if (user) {
     navigate("/marketplace");
     return null;
@@ -61,7 +60,7 @@ const Auth = () => {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <h1 className="font-display text-3xl font-bold text-foreground">
-              {isLogin ? "Welcome Back" : "Join Dubplate"}
+              {isLogin ? "Welcome Back" : "Join DubVault"}
             </h1>
             <p className="mt-2 font-mono text-xs text-muted-foreground">
               {isLogin ? "Sign in to your account" : "Create your account"}
@@ -74,7 +73,7 @@ const Auth = () => {
                 type="button"
                 onClick={() => setIsLogin(true)}
                 className={`flex-1 rounded py-2 font-mono text-xs uppercase tracking-wider transition-colors ${
-                  isLogin ? "bg-gold text-primary-foreground" : "bg-surface text-muted-foreground hover:text-foreground"
+                  isLogin ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Sign In
@@ -83,7 +82,7 @@ const Auth = () => {
                 type="button"
                 onClick={() => setIsLogin(false)}
                 className={`flex-1 rounded py-2 font-mono text-xs uppercase tracking-wider transition-colors ${
-                  !isLogin ? "bg-gold text-primary-foreground" : "bg-surface text-muted-foreground hover:text-foreground"
+                  !isLogin ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Sign Up
@@ -111,8 +110,8 @@ const Auth = () => {
                         onClick={() => setRole("dj")}
                         className={`rounded border py-3 font-mono text-xs uppercase tracking-wider transition-colors ${
                           role === "dj"
-                            ? "border-gold text-gold bg-surface-hover"
-                            : "border-border bg-surface text-muted-foreground hover:border-gold hover:text-gold"
+                            ? "border-primary text-primary bg-surface-hover"
+                            : "border-border bg-surface text-muted-foreground hover:border-primary hover:text-primary"
                         }`}
                       >
                         DJ / Buyer
@@ -122,8 +121,8 @@ const Auth = () => {
                         onClick={() => setRole("producer")}
                         className={`rounded border py-3 font-mono text-xs uppercase tracking-wider transition-colors ${
                           role === "producer"
-                            ? "border-gold text-gold bg-surface-hover"
-                            : "border-border bg-surface text-muted-foreground hover:border-gold hover:text-gold"
+                            ? "border-primary text-primary bg-surface-hover"
+                            : "border-border bg-surface text-muted-foreground hover:border-primary hover:text-primary"
                         }`}
                       >
                         Producer

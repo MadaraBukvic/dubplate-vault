@@ -61,11 +61,10 @@ const Marketplace = () => {
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-16">
         <div className="mb-8">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Browse</p>
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary">Browse</p>
           <h1 className="mt-2 font-display text-4xl font-bold text-foreground">Marketplace</h1>
         </div>
 
-        {/* Filters */}
         <div className="mb-8 flex flex-wrap items-center gap-4">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -100,9 +99,8 @@ const Marketplace = () => {
           </Select>
         </div>
 
-        {/* Grid */}
         {isLoading ? (
-          <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 text-gold animate-spin" /></div>
+          <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 text-primary animate-spin" /></div>
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

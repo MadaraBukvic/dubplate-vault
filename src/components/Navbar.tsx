@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Disc3, Menu, X, LogOut, User } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,24 +18,26 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
-          <Disc3 className="h-6 w-6 text-gold" />
+          <div className="h-7 w-7 rounded bg-primary flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-xs">DV</span>
+          </div>
           <span className="font-display text-lg font-bold tracking-tight text-foreground">
-            DUBPLATE
+            DUBVAULT
           </span>
         </Link>
 
         {/* Desktop */}
         <div className="hidden items-center gap-8 md:flex">
-          <Link to="/marketplace" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-gold">
+          <Link to="/marketplace" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary">
             Marketplace
           </Link>
           {user && profile?.role === "producer" && (
-            <Link to="/dashboard" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-gold">
+            <Link to="/dashboard" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary">
               Dashboard
             </Link>
           )}
           {user && (
-            <Link to="/library" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-gold">
+            <Link to="/library" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary">
               My Library
             </Link>
           )}

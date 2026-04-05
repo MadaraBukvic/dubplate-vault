@@ -32,8 +32,6 @@ const Dashboard = () => {
   const audioInputRef = useRef<HTMLInputElement>(null);
   const previewInputRef = useRef<HTMLInputElement>(null);
 
-
-  // Fetch producer's tracks
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ["producer-tracks", user?.id],
     queryFn: async () => {
@@ -49,7 +47,6 @@ const Dashboard = () => {
     enabled: !!user,
   });
 
-  // Connect status
   const { data: connectStatus, isLoading: connectLoading } = useQuery({
     queryKey: ["connect-status", user?.id],
     queryFn: async () => {
@@ -84,7 +81,6 @@ const Dashboard = () => {
     onError: (err: any) => toast.error(err.message),
   });
 
-  // Upload track mutation
   const uploadMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
@@ -94,7 +90,6 @@ const Dashboard = () => {
       let storagePath: string | null = null;
       let previewPath: string | null = null;
 
-      // Upload full track to private bucket
       const fullPath = `${user.id}/${timestamp}-${audioFile.name}`;
       const { error: uploadErr } = await supabase.storage
         .from("track-files")
@@ -102,7 +97,6 @@ const Dashboard = () => {
       if (uploadErr) throw new Error(`Upload failed: ${uploadErr.message}`);
       storagePath = fullPath;
 
-      // Upload preview to public bucket (if provided)
       if (previewFile) {
         const prevPath = `${user.id}/${timestamp}-${previewFile.name}`;
         const { error: prevErr } = await supabase.storage
@@ -143,7 +137,6 @@ const Dashboard = () => {
   const totalSales = tracks.reduce((s, t) => s + (t.copies_sold || 0), 0);
   const totalEarnings = tracks.reduce((s, t) => s + (Number(t.price_eur) * (t.copies_sold || 0)), 0);
 
-  // Redirect non-producers
   if (user && profile && profile.role !== "producer") {
     navigate("/marketplace");
     return null;
@@ -167,11 +160,10 @@ const Dashboard = () => {
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-16">
         <div className="mb-8">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Producer</p>
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary">Producer</p>
           <h1 className="mt-2 font-display text-4xl font-bold text-foreground">Dashboard</h1>
         </div>
 
-        {/* Stats */}
         <div className="mb-12 grid gap-4 sm:grid-cols-3">
           {[
             { label: "Tracks", value: tracks.length, icon: Music },
@@ -180,7 +172,7 @@ const Dashboard = () => {
           ].map((stat) => (
             <div key={stat.label} className="rounded-lg border border-border bg-card p-6">
               <div className="flex items-center gap-3">
-                <stat.icon className="h-4 w-4 text-gold" />
+                <stat.icon className="h-4 w-4 text-primary" />
                 <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{stat.label}</span>
               </div>
               <p className="mt-2 font-display text-3xl font-bold text-foreground">{stat.value}</p>
@@ -188,17 +180,16 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Stripe Connect Card */}
         <div className="mb-12 rounded-lg border border-border bg-card p-6">
           <div className="flex items-center gap-3 mb-4">
-            <CreditCard className="h-5 w-5 text-gold" />
+            <CreditCard className="h-5 w-5 text-primary" />
             <h2 className="font-display text-lg font-semibold text-foreground">Payouts</h2>
             <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground ml-auto">15% platform fee</span>
           </div>
 
           {connectLoading ? (
             <div className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin text-gold" />
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
               <span className="font-mono text-xs text-muted-foreground">Checking payout status...</span>
             </div>
           ) : connectStatus?.connected && connectStatus.details_submitted ? (
@@ -209,7 +200,7 @@ const Dashboard = () => {
               </div>
               <div className="flex gap-6">
                 <div>
-                  <span className="font-mono text-2xl font-bold text-gold">
+                  <span className="font-mono text-2xl font-bold text-primary">
                     €{(connectStatus.available_balance ?? 0).toFixed(2)}
                   </span>
                   <span className="block font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Available</span>
@@ -247,7 +238,6 @@ const Dashboard = () => {
         </div>
 
         <div className="grid gap-12 lg:grid-cols-2">
-          {/* Upload Form */}
           <div>
             <h2 className="font-display text-2xl font-semibold text-foreground mb-6">Upload Track</h2>
             <form
@@ -256,13 +246,7 @@ const Dashboard = () => {
             >
               <div>
                 <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Title</Label>
-                <Input
-                  className="mt-1.5 bg-surface border-border font-mono text-sm"
-                  placeholder="Track title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
-                />
+                <Input className="mt-1.5 bg-surface border-border font-mono text-sm" placeholder="Track title" value={title} onChange={(e) => setTitle(e.target.value)} required />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
@@ -290,9 +274,7 @@ const Dashboard = () => {
                 <div>
                   <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Exclusivity</Label>
                   <Select value={exclusivity} onValueChange={(v) => setExclusivity(v as "single" | "limited")}>
-                    <SelectTrigger className="mt-1.5 bg-surface border-border font-mono text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger className="mt-1.5 bg-surface border-border font-mono text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="single" className="font-mono text-xs">Single Buyer (1 of 1)</SelectItem>
                       <SelectItem value="limited" className="font-mono text-xs">Limited Copies</SelectItem>
@@ -306,7 +288,6 @@ const Dashboard = () => {
                   <Input type="number" className="mt-1.5 bg-surface border-border font-mono text-sm" value={maxCopies} onChange={(e) => setMaxCopies(e.target.value)} min="2" required />
                 </div>
               )}
-              {/* Audio file uploads */}
               <div>
                 <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                   <Upload className="inline h-3 w-3 mr-1" />Full Track (WAV/FLAC/MP3)
@@ -315,13 +296,11 @@ const Dashboard = () => {
                   ref={audioInputRef}
                   type="file"
                   accept="audio/mpeg,audio/wav,audio/flac,audio/aiff"
-                  className="mt-1.5 bg-surface border-border font-mono text-xs file:bg-gold/10 file:text-gold file:border-0 file:rounded file:px-3 file:py-1 file:mr-3 file:font-mono file:text-xs"
+                  className="mt-1.5 bg-surface border-border font-mono text-xs file:bg-primary/10 file:text-primary file:border-0 file:rounded file:px-3 file:py-1 file:mr-3 file:font-mono file:text-xs"
                   onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
                   required
                 />
-                {audioFile && (
-                  <p className="mt-1 font-mono text-[10px] text-muted-foreground">{audioFile.name} ({(audioFile.size / 1024 / 1024).toFixed(1)} MB)</p>
-                )}
+                {audioFile && <p className="mt-1 font-mono text-[10px] text-muted-foreground">{audioFile.name} ({(audioFile.size / 1024 / 1024).toFixed(1)} MB)</p>}
               </div>
               <div>
                 <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
@@ -331,12 +310,10 @@ const Dashboard = () => {
                   ref={previewInputRef}
                   type="file"
                   accept="audio/mpeg,audio/wav"
-                  className="mt-1.5 bg-surface border-border font-mono text-xs file:bg-gold/10 file:text-gold file:border-0 file:rounded file:px-3 file:py-1 file:mr-3 file:font-mono file:text-xs"
+                  className="mt-1.5 bg-surface border-border font-mono text-xs file:bg-primary/10 file:text-primary file:border-0 file:rounded file:px-3 file:py-1 file:mr-3 file:font-mono file:text-xs"
                   onChange={(e) => setPreviewFile(e.target.files?.[0] || null)}
                 />
-                {previewFile && (
-                  <p className="mt-1 font-mono text-[10px] text-muted-foreground">{previewFile.name} ({(previewFile.size / 1024 / 1024).toFixed(1)} MB)</p>
-                )}
+                {previewFile && <p className="mt-1 font-mono text-[10px] text-muted-foreground">{previewFile.name} ({(previewFile.size / 1024 / 1024).toFixed(1)} MB)</p>}
               </div>
               <Button variant="gold" className="w-full text-sm" disabled={uploadMutation.isPending}>
                 {uploadMutation.isPending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading...</> : <><Upload className="h-4 w-4 mr-2" /> Upload Track</>}
@@ -344,11 +321,10 @@ const Dashboard = () => {
             </form>
           </div>
 
-          {/* My Tracks */}
           <div>
             <h2 className="font-display text-2xl font-semibold text-foreground mb-6">My Tracks</h2>
             {isLoading ? (
-              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 text-gold animate-spin" /></div>
+              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 text-primary animate-spin" /></div>
             ) : tracks.length === 0 ? (
               <div className="py-12 text-center">
                 <Music className="mx-auto h-8 w-8 text-muted-foreground mb-3" />
@@ -365,10 +341,8 @@ const Dashboard = () => {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-mono text-sm font-semibold text-gold">€{track.price_eur}</p>
-                      <p className="font-mono text-[10px] text-muted-foreground">
-                        {track.copies_sold}/{track.max_copies} sold
-                      </p>
+                      <p className="font-mono text-sm font-semibold text-primary">€{track.price_eur}</p>
+                      <p className="font-mono text-[10px] text-muted-foreground">{track.copies_sold}/{track.max_copies} sold</p>
                     </div>
                   </div>
                 ))}
