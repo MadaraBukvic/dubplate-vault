@@ -4,10 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams, Link } from "react-router-dom";
 import { mockTracks } from "@/data/mockTracks";
-import { ArrowLeft, Play, Shield } from "lucide-react";
+import { ArrowLeft, Play, Shield, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const TrackDetail = () => {
   const { id } = useParams();
+  const { user } = useAuth();
+  const [isProcessing, setIsProcessing] = useState(false);
   const track = mockTracks.find((t) => t.id === id);
 
   if (!track) {
@@ -26,6 +32,31 @@ const TrackDetail = () => {
 
   const remaining = track.maxCopies - track.copiesSold;
   const isSoldOut = remaining <= 0;
+
+  const handlePurchase = async () => {
+    if (!user) {
+      toast.error("Please sign in to purchase tracks.");
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { trackId: track.id },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create checkout session");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -75,9 +106,21 @@ const TrackDetail = () => {
                 variant="gold"
                 size="lg"
                 className="mt-6 w-full text-sm"
-                disabled={isSoldOut}
+                disabled={isSoldOut || isProcessing}
+                onClick={handlePurchase}
               >
-                {isSoldOut ? "Sold Out" : "Purchase Exclusive License"}
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : isSoldOut ? (
+                  "Sold Out"
+                ) : !user ? (
+                  "Sign In to Purchase"
+                ) : (
+                  "Purchase Exclusive License"
+                )}
               </Button>
 
               <div className="mt-4 flex items-start gap-2">

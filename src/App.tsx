@@ -10,6 +10,7 @@ import TrackDetail from "./pages/TrackDetail.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Library from "./pages/Library.tsx";
 import Auth from "./pages/Auth.tsx";
+import PaymentSuccess from "./pages/PaymentSuccess.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/library" element={<Library />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
