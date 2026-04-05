@@ -9,7 +9,7 @@ import { Upload, Music, DollarSign, BarChart3, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -26,6 +26,10 @@ const Dashboard = () => {
   const [price, setPrice] = useState("45");
   const [exclusivity, setExclusivity] = useState<"single" | "limited">("single");
   const [maxCopies, setMaxCopies] = useState("1");
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const previewInputRef = useRef<HTMLInputElement>(null);
 
   // Redirect non-producers
   if (user && profile && profile.role !== "producer") {
