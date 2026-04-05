@@ -32,11 +32,6 @@ const Dashboard = () => {
   const audioInputRef = useRef<HTMLInputElement>(null);
   const previewInputRef = useRef<HTMLInputElement>(null);
 
-  // Redirect non-producers
-  if (user && profile && profile.role !== "producer") {
-    navigate("/marketplace");
-    return null;
-  }
 
   // Fetch producer's tracks
   const { data: tracks = [], isLoading } = useQuery({
