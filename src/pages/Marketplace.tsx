@@ -1,31 +1,60 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TrackCard from "@/components/TrackCard";
-import { mockTracks } from "@/data/mockTracks";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { useState, useMemo } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import type { Track } from "@/components/TrackCard";
 
 const Marketplace = () => {
   const [search, setSearch] = useState("");
   const [genre, setGenre] = useState("all");
   const [sort, setSort] = useState("newest");
 
+  const { data: dbTracks = [], isLoading } = useQuery({
+    queryKey: ["marketplace-tracks"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tracks")
+        .select("*, profiles:producer_id (display_name)")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data.map((t): Track => ({
+        id: t.id,
+        title: t.title,
+        producer_id: t.producer_id,
+        producer_name: (t.profiles as any)?.display_name || "Unknown",
+        bpm: t.bpm,
+        key: t.key,
+        genre: t.genre,
+        price_eur: Number(t.price_eur),
+        exclusivity_type: t.exclusivity_type as "single" | "limited",
+        max_copies: t.max_copies,
+        copies_sold: t.copies_sold,
+        description: t.description,
+        preview_path: t.preview_path,
+        created_at: t.created_at,
+      }));
+    },
+  });
+
   const genres = useMemo(() => {
-    const g = new Set(mockTracks.map((t) => t.genre));
+    const g = new Set(dbTracks.map((t) => t.genre));
     return Array.from(g);
-  }, []);
+  }, [dbTracks]);
 
   const filtered = useMemo(() => {
-    let tracks = mockTracks;
-    if (search) tracks = tracks.filter((t) => t.title.toLowerCase().includes(search.toLowerCase()) || t.producer.toLowerCase().includes(search.toLowerCase()));
+    let tracks = dbTracks;
+    if (search) tracks = tracks.filter((t) => t.title.toLowerCase().includes(search.toLowerCase()) || (t.producer_name || "").toLowerCase().includes(search.toLowerCase()));
     if (genre !== "all") tracks = tracks.filter((t) => t.genre === genre);
-    if (sort === "price-asc") tracks = [...tracks].sort((a, b) => a.price - b.price);
-    if (sort === "price-desc") tracks = [...tracks].sort((a, b) => b.price - a.price);
+    if (sort === "price-asc") tracks = [...tracks].sort((a, b) => a.price_eur - b.price_eur);
+    if (sort === "price-desc") tracks = [...tracks].sort((a, b) => b.price_eur - a.price_eur);
     if (sort === "bpm") tracks = [...tracks].sort((a, b) => a.bpm - b.bpm);
     return tracks;
-  }, [search, genre, sort]);
+  }, [search, genre, sort, dbTracks]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -72,16 +101,21 @@ const Marketplace = () => {
         </div>
 
         {/* Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((track) => (
-            <TrackCard key={track.id} track={track} />
-          ))}
-        </div>
-
-        {filtered.length === 0 && (
-          <div className="py-20 text-center">
-            <p className="font-mono text-sm text-muted-foreground">No tracks found.</p>
-          </div>
+        {isLoading ? (
+          <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 text-gold animate-spin" /></div>
+        ) : (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((track) => (
+                <TrackCard key={track.id} track={track} />
+              ))}
+            </div>
+            {filtered.length === 0 && (
+              <div className="py-20 text-center">
+                <p className="font-mono text-sm text-muted-foreground">No tracks found.</p>
+              </div>
+            )}
+          </>
         )}
       </div>
       <Footer />
