@@ -34,7 +34,9 @@ const TrackCard = ({ track }: { track: Track }) => {
             <h3 className="font-display text-lg font-semibold text-foreground truncate group-hover:text-gold transition-colors">
               {track.title}
             </h3>
-            <p className="font-mono text-xs text-muted-foreground mt-0.5">{track.producer_name || "Unknown"}</p>
+            <Link to={`/producer/${track.producer_id}`} onClick={(e) => e.stopPropagation()} className="font-mono text-xs text-muted-foreground mt-0.5 hover:text-gold transition-colors block">
+              {track.producer_name || "Unknown"}
+            </Link>
           </div>
           <button
             onClick={(e) => { e.preventDefault(); setIsPlaying(!isPlaying); }}
