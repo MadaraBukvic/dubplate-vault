@@ -54,6 +54,41 @@ const Dashboard = () => {
     enabled: !!user,
   });
 
+  // Connect status
+  const { data: connectStatus, isLoading: connectLoading } = useQuery({
+    queryKey: ["connect-status", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("connect-status");
+      if (error) throw error;
+      return data as {
+        connected: boolean;
+        details_submitted: boolean;
+        payouts_enabled: boolean;
+        available_balance?: number;
+        pending_balance?: number;
+        currency?: string;
+      };
+    },
+    enabled: !!user && profile?.role === "producer",
+  });
+
+  const connectOnboarding = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("connect-onboarding");
+      if (error) throw error;
+      return data as { status: string; url?: string; accountId?: string };
+    },
+    onSuccess: (data) => {
+      if (data.status === "onboarding" && data.url) {
+        window.open(data.url, "_blank");
+      } else if (data.status === "complete") {
+        toast.success("Stripe account is already set up!");
+        queryClient.invalidateQueries({ queryKey: ["connect-status"] });
+      }
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
   // Upload track mutation
   const uploadMutation = useMutation({
     mutationFn: async () => {
