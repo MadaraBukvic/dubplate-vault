@@ -69,13 +69,8 @@ const TrackDetail = () => {
         <div className="mt-6 grid gap-12 lg:grid-cols-2">
           {/* Left - Preview */}
           <div>
-            <div className="flex aspect-square items-center justify-center rounded-lg border border-border bg-surface">
-              <div className="text-center">
-                <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border-2 border-gold/30 bg-background">
-                  <Play className="h-8 w-8 text-gold ml-1" />
-                </div>
-                <p className="font-mono text-xs text-muted-foreground">30s Preview</p>
-              </div>
+            <div className="rounded-lg border border-border bg-surface p-6">
+              <WaveformPlayer title={`${track.title} — ${track.producer}`} />
             </div>
           </div>
 
