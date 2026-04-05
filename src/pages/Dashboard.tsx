@@ -57,6 +57,30 @@ const Dashboard = () => {
   const uploadMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
+      if (!audioFile) throw new Error("Please select an audio file");
+
+      const timestamp = Date.now();
+      let storagePath: string | null = null;
+      let previewPath: string | null = null;
+
+      // Upload full track to private bucket
+      const fullPath = `${user.id}/${timestamp}-${audioFile.name}`;
+      const { error: uploadErr } = await supabase.storage
+        .from("track-files")
+        .upload(fullPath, audioFile);
+      if (uploadErr) throw new Error(`Upload failed: ${uploadErr.message}`);
+      storagePath = fullPath;
+
+      // Upload preview to public bucket (if provided)
+      if (previewFile) {
+        const prevPath = `${user.id}/${timestamp}-${previewFile.name}`;
+        const { error: prevErr } = await supabase.storage
+          .from("track-previews")
+          .upload(prevPath, previewFile);
+        if (prevErr) throw new Error(`Preview upload failed: ${prevErr.message}`);
+        previewPath = prevPath;
+      }
+
       const { error } = await supabase.from("tracks").insert({
         producer_id: user.id,
         title,
@@ -67,6 +91,8 @@ const Dashboard = () => {
         price_eur: parseFloat(price),
         exclusivity_type: exclusivity,
         max_copies: exclusivity === "single" ? 1 : parseInt(maxCopies),
+        storage_path: storagePath,
+        preview_path: previewPath,
       });
       if (error) throw error;
     },
