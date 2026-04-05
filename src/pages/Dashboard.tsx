@@ -143,6 +143,12 @@ const Dashboard = () => {
   const totalSales = tracks.reduce((s, t) => s + (t.copies_sold || 0), 0);
   const totalEarnings = tracks.reduce((s, t) => s + (Number(t.price_eur) * (t.copies_sold || 0)), 0);
 
+  // Redirect non-producers
+  if (user && profile && profile.role !== "producer") {
+    navigate("/marketplace");
+    return null;
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
