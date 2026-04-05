@@ -16,6 +16,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 const Dashboard = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
   const [title, setTitle] = useState("");
