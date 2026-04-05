@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import Library from "./pages/Library.tsx";
 import Auth from "./pages/Auth.tsx";
 import PaymentSuccess from "./pages/PaymentSuccess.tsx";
+import ProducerProfile from "./pages/ProducerProfile.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/library" element={<Library />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/producer/:id" element={<ProducerProfile />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
