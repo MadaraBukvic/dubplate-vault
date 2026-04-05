@@ -55,7 +55,7 @@ const ProducerProfile = () => {
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="flex items-center justify-center py-32">
-          <Loader2 className="h-8 w-8 animate-spin text-gold" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
         <Footer />
       </div>
@@ -70,7 +70,7 @@ const ProducerProfile = () => {
           <Music className="h-12 w-12 text-muted-foreground mb-4" />
           <h2 className="font-display text-2xl font-bold text-foreground mb-2">Producer not found</h2>
           <p className="text-muted-foreground font-mono text-sm">This profile doesn't exist or isn't a producer.</p>
-          <Link to="/marketplace" className="mt-6 text-gold hover:underline font-mono text-sm">
+          <Link to="/marketplace" className="mt-6 text-primary hover:underline font-mono text-sm">
             ← Back to Marketplace
           </Link>
         </div>
@@ -88,18 +88,15 @@ const ProducerProfile = () => {
       <Navbar />
 
       <main className="container mx-auto px-4 py-12">
-        {/* Profile Header */}
         <div className="mb-12 flex flex-col md:flex-row gap-8 items-start">
-          {/* Avatar */}
-          <div className="h-28 w-28 shrink-0 rounded-full border-2 border-gold/30 bg-surface flex items-center justify-center overflow-hidden">
+          <div className="h-28 w-28 shrink-0 rounded-lg border-2 border-primary/30 bg-surface flex items-center justify-center overflow-hidden">
             {profile.avatar_url ? (
               <img src={profile.avatar_url} alt={profile.display_name} className="h-full w-full object-cover" />
             ) : (
-              <Music className="h-10 w-10 text-gold/50" />
+              <Music className="h-10 w-10 text-primary/50" />
             )}
           </div>
 
-          {/* Info */}
           <div className="flex-1">
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
               {profile.display_name}
@@ -108,7 +105,7 @@ const ProducerProfile = () => {
             {genres.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {genres.map((g) => (
-                  <Badge key={g} variant="outline" className="font-mono text-[10px] uppercase tracking-wider border-gold/20 text-gold">
+                  <Badge key={g} variant="outline" className="font-mono text-[10px] uppercase tracking-wider border-primary/20 text-primary">
                     {g}
                   </Badge>
                 ))}
@@ -121,18 +118,12 @@ const ProducerProfile = () => {
               </p>
             )}
 
-            {/* Social Links */}
             {Object.keys(socialLinks).length > 0 && (
               <div className="flex flex-wrap gap-3">
                 {Object.entries(socialLinks).map(([platform, url]) => (
                   url && (
-                    <a
-                      key={platform}
-                      href={url as string}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-gold transition-colors"
-                    >
+                    <a key={platform} href={url as string} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-primary transition-colors">
                       <ExternalLink className="h-3 w-3" />
                       {SOCIAL_ICONS[platform] || platform}
                     </a>
@@ -141,24 +132,20 @@ const ProducerProfile = () => {
               </div>
             )}
 
-            {/* Stats */}
             <div className="mt-6 flex gap-6">
               <div>
-                <span className="font-mono text-2xl font-bold text-gold">{tracks?.length || 0}</span>
+                <span className="font-mono text-2xl font-bold text-primary">{tracks?.length || 0}</span>
                 <span className="block font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Tracks</span>
               </div>
               <div>
-                <span className="font-mono text-2xl font-bold text-gold">{totalSold}</span>
+                <span className="font-mono text-2xl font-bold text-primary">{totalSold}</span>
                 <span className="block font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Sold</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Tracks */}
-        <h2 className="font-display text-xl font-semibold text-foreground mb-6 border-b border-border pb-3">
-          Tracks
-        </h2>
+        <h2 className="font-display text-xl font-semibold text-foreground mb-6 border-b border-border pb-3">Tracks</h2>
 
         {tracks && tracks.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

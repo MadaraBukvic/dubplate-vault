@@ -17,14 +17,7 @@ const Library = () => {
       if (!user) return [];
       const { data, error } = await supabase
         .from("purchases")
-        .select(`
-          *,
-          tracks (
-            id, title, bpm, key, genre, producer_id,
-            profiles:producer_id (display_name)
-          ),
-          licenses (terms_text, signed_at)
-        `)
+        .select(`*, tracks (id, title, bpm, key, genre, producer_id, profiles:producer_id (display_name)), licenses (terms_text, signed_at)`)
         .eq("buyer_id", user.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -51,12 +44,12 @@ const Library = () => {
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-16">
         <div className="mb-8">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-gold">Your Collection</p>
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary">Your Collection</p>
           <h1 className="mt-2 font-display text-4xl font-bold text-foreground">My Library</h1>
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 text-gold animate-spin" /></div>
+          <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 text-primary animate-spin" /></div>
         ) : purchases.length === 0 ? (
           <div className="py-20 text-center">
             <Music className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
@@ -78,40 +71,27 @@ const Library = () => {
                       <p className="font-mono text-xs text-muted-foreground mt-1">by {producerName}</p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {[`${track?.bpm} BPM`, track?.key, track?.genre].filter(Boolean).map((tag) => (
-                          <span key={tag} className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                            {tag}
-                          </span>
+                          <span key={tag} className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded">{tag}</span>
                         ))}
                       </div>
                     </div>
-
                     <div className="flex flex-col items-end gap-3">
                       <Button variant="gold" size="sm" className="text-xs gap-2">
-                        <Download className="h-3 w-3" />
-                        Download
+                        <Download className="h-3 w-3" />Download
                       </Button>
-                      <span className="font-mono text-[10px] text-muted-foreground">
-                        {purchase.download_count} of 3 downloads used
-                      </span>
+                      <span className="font-mono text-[10px] text-muted-foreground">{purchase.download_count} of 3 downloads used</span>
                     </div>
                   </div>
 
-                  {/* License info */}
                   <div className="mt-4 rounded border border-border bg-surface p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <FileText className="h-3 w-3 text-gold" />
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-gold">License</span>
+                      <FileText className="h-3 w-3 text-primary" />
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-primary">License</span>
                     </div>
                     <div className="grid gap-1">
-                      <p className="font-mono text-[10px] text-muted-foreground">
-                        Token: <span className="text-foreground">{purchase.license_token}</span>
-                      </p>
-                      <p className="font-mono text-[10px] text-muted-foreground">
-                        Purchased: <span className="text-foreground">{new Date(purchase.created_at).toLocaleDateString()}</span>
-                      </p>
-                      <p className="font-mono text-[10px] text-muted-foreground">
-                        {license?.terms_text || "Non-transferable · Live DJ sets only · No redistribution"}
-                      </p>
+                      <p className="font-mono text-[10px] text-muted-foreground">Token: <span className="text-foreground">{purchase.license_token}</span></p>
+                      <p className="font-mono text-[10px] text-muted-foreground">Purchased: <span className="text-foreground">{new Date(purchase.created_at).toLocaleDateString()}</span></p>
+                      <p className="font-mono text-[10px] text-muted-foreground">{license?.terms_text || "Non-transferable · Live DJ sets only · No redistribution"}</p>
                     </div>
                   </div>
                 </div>

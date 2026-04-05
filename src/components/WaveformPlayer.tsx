@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useMemo, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useWavesurfer } from "@wavesurfer/react";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 
@@ -17,9 +17,9 @@ const WaveformPlayer = ({ audioUrl, title }: WaveformPlayerProps) => {
   const { wavesurfer } = useWavesurfer({
     container: containerRef,
     url: audioUrl || "",
-    waveColor: "hsl(42, 52%, 35%)",
-    progressColor: "hsl(42, 52%, 54%)",
-    cursorColor: "hsl(42, 52%, 64%)",
+    waveColor: "hsl(0, 0%, 30%)",
+    progressColor: "hsl(0, 72%, 51%)",
+    cursorColor: "hsl(0, 72%, 62%)",
     cursorWidth: 2,
     barWidth: 2,
     barGap: 2,
@@ -30,14 +30,12 @@ const WaveformPlayer = ({ audioUrl, title }: WaveformPlayerProps) => {
 
   useEffect(() => {
     if (!wavesurfer) return;
-
     const subs = [
       wavesurfer.on("play", () => setIsPlaying(true)),
       wavesurfer.on("pause", () => setIsPlaying(false)),
       wavesurfer.on("timeupdate", (t: number) => setCurrentTime(t)),
       wavesurfer.on("ready", () => setDuration(wavesurfer.getDuration())),
     ];
-
     return () => subs.forEach((unsub) => unsub());
   }, [wavesurfer]);
 
@@ -63,7 +61,6 @@ const WaveformPlayer = ({ audioUrl, title }: WaveformPlayerProps) => {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Waveform container */}
       <div
         className={`relative rounded-lg border border-border bg-background p-4 ${
           !hasAudio ? "flex items-center justify-center min-h-[120px]" : ""
@@ -73,14 +70,13 @@ const WaveformPlayer = ({ audioUrl, title }: WaveformPlayerProps) => {
           <div ref={containerRef} className="w-full" />
         ) : (
           <div className="text-center">
-            {/* Fake waveform bars for placeholder */}
             <div className="flex items-end justify-center gap-[3px] h-[80px] mb-3">
               {Array.from({ length: 60 }).map((_, i) => {
                 const height = Math.sin(i * 0.3) * 30 + Math.random() * 20 + 10;
                 return (
                   <div
                     key={i}
-                    className="w-[2px] rounded-full bg-gold/20"
+                    className="w-[2px] rounded-full bg-primary/20"
                     style={{ height: `${height}px` }}
                   />
                 );
@@ -93,17 +89,16 @@ const WaveformPlayer = ({ audioUrl, title }: WaveformPlayerProps) => {
         )}
       </div>
 
-      {/* Controls */}
       <div className="flex items-center gap-4">
         <button
           onClick={togglePlay}
           disabled={!hasAudio}
-          className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-gold/30 bg-background transition-colors hover:border-gold disabled:opacity-30 disabled:cursor-not-allowed"
+          className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary/30 bg-background transition-colors hover:border-primary disabled:opacity-30 disabled:cursor-not-allowed"
         >
           {isPlaying ? (
-            <Pause className="h-5 w-5 text-gold" />
+            <Pause className="h-5 w-5 text-primary" />
           ) : (
-            <Play className="h-5 w-5 text-gold ml-0.5" />
+            <Play className="h-5 w-5 text-primary ml-0.5" />
           )}
         </button>
 
@@ -121,7 +116,7 @@ const WaveformPlayer = ({ audioUrl, title }: WaveformPlayerProps) => {
         <button
           onClick={toggleMute}
           disabled={!hasAudio}
-          className="text-muted-foreground hover:text-gold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          className="text-muted-foreground hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           {isMuted ? (
             <VolumeX className="h-4 w-4" />
@@ -130,7 +125,7 @@ const WaveformPlayer = ({ audioUrl, title }: WaveformPlayerProps) => {
           )}
         </button>
 
-        <span className="font-mono text-[10px] uppercase tracking-wider text-gold/60 border border-gold/20 px-2 py-0.5 rounded">
+        <span className="font-mono text-[10px] uppercase tracking-wider text-primary/60 border border-primary/20 px-2 py-0.5 rounded">
           30s preview
         </span>
       </div>
