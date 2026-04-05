@@ -245,6 +245,7 @@ const Dashboard = () => {
           )}
         </div>
 
+        <div className="grid gap-12 lg:grid-cols-2">
           {/* Upload Form */}
           <div>
             <h2 className="font-display text-2xl font-semibold text-foreground mb-6">Upload Track</h2>
