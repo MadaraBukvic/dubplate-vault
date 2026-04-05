@@ -101,6 +101,10 @@ const Dashboard = () => {
       queryClient.invalidateQueries({ queryKey: ["producer-tracks"] });
       setTitle("");
       setDescription("");
+      setAudioFile(null);
+      setPreviewFile(null);
+      if (audioInputRef.current) audioInputRef.current.value = "";
+      if (previewInputRef.current) previewInputRef.current.value = "";
     },
     onError: (err: any) => toast.error(err.message),
   });
