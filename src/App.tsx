@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import Library from "./pages/Library.tsx";
 import Auth from "./pages/Auth.tsx";
 import PaymentSuccess from "./pages/PaymentSuccess.tsx";
+import ProducerProfile from "./pages/ProducerProfile.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
