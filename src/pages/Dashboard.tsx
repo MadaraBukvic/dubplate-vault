@@ -5,17 +5,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, Music, DollarSign, BarChart3, Loader2 } from "lucide-react";
+import { Upload, Music, DollarSign, BarChart3, Loader2, CreditCard, CheckCircle, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
   const [title, setTitle] = useState("");
@@ -31,11 +32,6 @@ const Dashboard = () => {
   const audioInputRef = useRef<HTMLInputElement>(null);
   const previewInputRef = useRef<HTMLInputElement>(null);
 
-  // Redirect non-producers
-  if (user && profile && profile.role !== "producer") {
-    navigate("/marketplace");
-    return null;
-  }
 
   // Fetch producer's tracks
   const { data: tracks = [], isLoading } = useQuery({
@@ -51,6 +47,41 @@ const Dashboard = () => {
       return data;
     },
     enabled: !!user,
+  });
+
+  // Connect status
+  const { data: connectStatus, isLoading: connectLoading } = useQuery({
+    queryKey: ["connect-status", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("connect-status");
+      if (error) throw error;
+      return data as {
+        connected: boolean;
+        details_submitted: boolean;
+        payouts_enabled: boolean;
+        available_balance?: number;
+        pending_balance?: number;
+        currency?: string;
+      };
+    },
+    enabled: !!user && profile?.role === "producer",
+  });
+
+  const connectOnboarding = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("connect-onboarding");
+      if (error) throw error;
+      return data as { status: string; url?: string; accountId?: string };
+    },
+    onSuccess: (data) => {
+      if (data.status === "onboarding" && data.url) {
+        window.open(data.url, "_blank");
+      } else if (data.status === "complete") {
+        toast.success("Stripe account is already set up!");
+        queryClient.invalidateQueries({ queryKey: ["connect-status"] });
+      }
+    },
+    onError: (err: any) => toast.error(err.message),
   });
 
   // Upload track mutation
@@ -112,6 +143,12 @@ const Dashboard = () => {
   const totalSales = tracks.reduce((s, t) => s + (t.copies_sold || 0), 0);
   const totalEarnings = tracks.reduce((s, t) => s + (Number(t.price_eur) * (t.copies_sold || 0)), 0);
 
+  // Redirect non-producers
+  if (user && profile && profile.role !== "producer") {
+    navigate("/marketplace");
+    return null;
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
@@ -149,6 +186,64 @@ const Dashboard = () => {
               <p className="mt-2 font-display text-3xl font-bold text-foreground">{stat.value}</p>
             </div>
           ))}
+        </div>
+
+        {/* Stripe Connect Card */}
+        <div className="mb-12 rounded-lg border border-border bg-card p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <CreditCard className="h-5 w-5 text-gold" />
+            <h2 className="font-display text-lg font-semibold text-foreground">Payouts</h2>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground ml-auto">15% platform fee</span>
+          </div>
+
+          {connectLoading ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin text-gold" />
+              <span className="font-mono text-xs text-muted-foreground">Checking payout status...</span>
+            </div>
+          ) : connectStatus?.connected && connectStatus.details_submitted ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span className="font-mono text-xs text-foreground">Payouts {connectStatus.payouts_enabled ? "enabled" : "pending verification"}</span>
+              </div>
+              <div className="flex gap-6">
+                <div>
+                  <span className="font-mono text-2xl font-bold text-gold">
+                    €{(connectStatus.available_balance ?? 0).toFixed(2)}
+                  </span>
+                  <span className="block font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Available</span>
+                </div>
+                <div>
+                  <span className="font-mono text-2xl font-bold text-foreground">
+                    €{(connectStatus.pending_balance ?? 0).toFixed(2)}
+                  </span>
+                  <span className="block font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Pending</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-amber-500" />
+                <span className="font-mono text-xs text-muted-foreground">
+                  Connect your Stripe account to receive payouts from track sales.
+                </span>
+              </div>
+              <Button
+                variant="gold"
+                size="sm"
+                onClick={() => connectOnboarding.mutate()}
+                disabled={connectOnboarding.isPending}
+              >
+                {connectOnboarding.isPending ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Setting up...</>
+                ) : (
+                  <><CreditCard className="h-4 w-4 mr-2" /> Connect Stripe Account</>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="grid gap-12 lg:grid-cols-2">

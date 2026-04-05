@@ -8,6 +8,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const PLATFORM_COMMISSION = 0.15; // 15%
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -29,7 +31,7 @@ serve(async (req) => {
     const { trackId } = await req.json();
     if (!trackId) throw new Error("trackId is required");
 
-    // Fetch track from DB using service role to bypass RLS for reading
+    // Fetch track + producer profile using service role
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -37,7 +39,7 @@ serve(async (req) => {
 
     const { data: track, error: trackError } = await supabaseAdmin
       .from("tracks")
-      .select("*, profiles!tracks_producer_id_fkey(display_name)")
+      .select("*, profiles!tracks_producer_id_fkey(display_name, stripe_account_id)")
       .eq("id", trackId)
       .single();
 
@@ -70,8 +72,12 @@ serve(async (req) => {
     }
 
     const producerName = track.profiles?.display_name || "Unknown Producer";
+    const unitAmount = Math.round(track.price_eur * 100);
+    const applicationFee = Math.round(unitAmount * PLATFORM_COMMISSION);
+    const producerStripeAccountId = track.profiles?.stripe_account_id;
 
-    const session = await stripe.checkout.sessions.create({
+    // Build session params
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -82,7 +88,7 @@ serve(async (req) => {
               name: track.title,
               description: `Exclusive dubplate by ${producerName} · ${track.bpm} BPM · ${track.key} · ${track.genre}`,
             },
-            unit_amount: Math.round(track.price_eur * 100),
+            unit_amount: unitAmount,
           },
           quantity: 1,
         },
@@ -94,7 +100,19 @@ serve(async (req) => {
         track_id: trackId,
         buyer_id: user.id,
       },
-    });
+    };
+
+    // If producer has Connect account, use payment splitting
+    if (producerStripeAccountId) {
+      sessionParams.payment_intent_data = {
+        application_fee_amount: applicationFee,
+        transfer_data: {
+          destination: producerStripeAccountId,
+        },
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
