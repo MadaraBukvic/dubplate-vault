@@ -211,8 +211,40 @@ const Dashboard = () => {
                   <Input type="number" className="mt-1.5 bg-surface border-border font-mono text-sm" value={maxCopies} onChange={(e) => setMaxCopies(e.target.value)} min="2" required />
                 </div>
               )}
+              {/* Audio file uploads */}
+              <div>
+                <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                  <Upload className="inline h-3 w-3 mr-1" />Full Track (WAV/FLAC/MP3)
+                </Label>
+                <Input
+                  ref={audioInputRef}
+                  type="file"
+                  accept="audio/mpeg,audio/wav,audio/flac,audio/aiff"
+                  className="mt-1.5 bg-surface border-border font-mono text-xs file:bg-gold/10 file:text-gold file:border-0 file:rounded file:px-3 file:py-1 file:mr-3 file:font-mono file:text-xs"
+                  onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+                  required
+                />
+                {audioFile && (
+                  <p className="mt-1 font-mono text-[10px] text-muted-foreground">{audioFile.name} ({(audioFile.size / 1024 / 1024).toFixed(1)} MB)</p>
+                )}
+              </div>
+              <div>
+                <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                  <Music className="inline h-3 w-3 mr-1" />Preview (30s, MP3/WAV — optional)
+                </Label>
+                <Input
+                  ref={previewInputRef}
+                  type="file"
+                  accept="audio/mpeg,audio/wav"
+                  className="mt-1.5 bg-surface border-border font-mono text-xs file:bg-gold/10 file:text-gold file:border-0 file:rounded file:px-3 file:py-1 file:mr-3 file:font-mono file:text-xs"
+                  onChange={(e) => setPreviewFile(e.target.files?.[0] || null)}
+                />
+                {previewFile && (
+                  <p className="mt-1 font-mono text-[10px] text-muted-foreground">{previewFile.name} ({(previewFile.size / 1024 / 1024).toFixed(1)} MB)</p>
+                )}
+              </div>
               <Button variant="gold" className="w-full text-sm" disabled={uploadMutation.isPending}>
-                {uploadMutation.isPending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading...</> : "Upload Track"}
+                {uploadMutation.isPending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading...</> : <><Upload className="h-4 w-4 mr-2" /> Upload Track</>}
               </Button>
             </form>
           </div>
