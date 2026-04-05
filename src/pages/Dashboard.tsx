@@ -187,7 +187,64 @@ const Dashboard = () => {
           ))}
         </div>
 
-        <div className="grid gap-12 lg:grid-cols-2">
+        {/* Stripe Connect Card */}
+        <div className="mb-12 rounded-lg border border-border bg-card p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <CreditCard className="h-5 w-5 text-gold" />
+            <h2 className="font-display text-lg font-semibold text-foreground">Payouts</h2>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground ml-auto">15% platform fee</span>
+          </div>
+
+          {connectLoading ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin text-gold" />
+              <span className="font-mono text-xs text-muted-foreground">Checking payout status...</span>
+            </div>
+          ) : connectStatus?.connected && connectStatus.details_submitted ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span className="font-mono text-xs text-foreground">Payouts {connectStatus.payouts_enabled ? "enabled" : "pending verification"}</span>
+              </div>
+              <div className="flex gap-6">
+                <div>
+                  <span className="font-mono text-2xl font-bold text-gold">
+                    €{(connectStatus.available_balance ?? 0).toFixed(2)}
+                  </span>
+                  <span className="block font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Available</span>
+                </div>
+                <div>
+                  <span className="font-mono text-2xl font-bold text-foreground">
+                    €{(connectStatus.pending_balance ?? 0).toFixed(2)}
+                  </span>
+                  <span className="block font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Pending</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-amber-500" />
+                <span className="font-mono text-xs text-muted-foreground">
+                  Connect your Stripe account to receive payouts from track sales.
+                </span>
+              </div>
+              <Button
+                variant="gold"
+                size="sm"
+                onClick={() => connectOnboarding.mutate()}
+                disabled={connectOnboarding.isPending}
+              >
+                {connectOnboarding.isPending ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Setting up...</>
+                ) : (
+                  <><CreditCard className="h-4 w-4 mr-2" /> Connect Stripe Account</>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+
           {/* Upload Form */}
           <div>
             <h2 className="font-display text-2xl font-semibold text-foreground mb-6">Upload Track</h2>
