@@ -98,7 +98,10 @@ const TrackDetail = () => {
         <div className="mt-6 grid gap-12 lg:grid-cols-2">
           <div>
             <div className="rounded-lg border border-border bg-surface p-6">
-              <WaveformPlayer title={`${track.title} — ${track.producer_name || "Unknown"}`} />
+              <WaveformPlayer
+                title={`${track.title} — ${track.producer_name || "Unknown"}`}
+                audioUrl={track.preview_path ? supabase.storage.from("track-previews").getPublicUrl(track.preview_path).data.publicUrl : undefined}
+              />
             </div>
           </div>
 

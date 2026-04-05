@@ -9,7 +9,7 @@ import { Upload, Music, DollarSign, BarChart3, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -26,6 +26,10 @@ const Dashboard = () => {
   const [price, setPrice] = useState("45");
   const [exclusivity, setExclusivity] = useState<"single" | "limited">("single");
   const [maxCopies, setMaxCopies] = useState("1");
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const previewInputRef = useRef<HTMLInputElement>(null);
 
   // Redirect non-producers
   if (user && profile && profile.role !== "producer") {
@@ -53,6 +57,30 @@ const Dashboard = () => {
   const uploadMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
+      if (!audioFile) throw new Error("Please select an audio file");
+
+      const timestamp = Date.now();
+      let storagePath: string | null = null;
+      let previewPath: string | null = null;
+
+      // Upload full track to private bucket
+      const fullPath = `${user.id}/${timestamp}-${audioFile.name}`;
+      const { error: uploadErr } = await supabase.storage
+        .from("track-files")
+        .upload(fullPath, audioFile);
+      if (uploadErr) throw new Error(`Upload failed: ${uploadErr.message}`);
+      storagePath = fullPath;
+
+      // Upload preview to public bucket (if provided)
+      if (previewFile) {
+        const prevPath = `${user.id}/${timestamp}-${previewFile.name}`;
+        const { error: prevErr } = await supabase.storage
+          .from("track-previews")
+          .upload(prevPath, previewFile);
+        if (prevErr) throw new Error(`Preview upload failed: ${prevErr.message}`);
+        previewPath = prevPath;
+      }
+
       const { error } = await supabase.from("tracks").insert({
         producer_id: user.id,
         title,
@@ -63,6 +91,8 @@ const Dashboard = () => {
         price_eur: parseFloat(price),
         exclusivity_type: exclusivity,
         max_copies: exclusivity === "single" ? 1 : parseInt(maxCopies),
+        storage_path: storagePath,
+        preview_path: previewPath,
       });
       if (error) throw error;
     },
@@ -71,6 +101,10 @@ const Dashboard = () => {
       queryClient.invalidateQueries({ queryKey: ["producer-tracks"] });
       setTitle("");
       setDescription("");
+      setAudioFile(null);
+      setPreviewFile(null);
+      if (audioInputRef.current) audioInputRef.current.value = "";
+      if (previewInputRef.current) previewInputRef.current.value = "";
     },
     onError: (err: any) => toast.error(err.message),
   });
@@ -177,8 +211,40 @@ const Dashboard = () => {
                   <Input type="number" className="mt-1.5 bg-surface border-border font-mono text-sm" value={maxCopies} onChange={(e) => setMaxCopies(e.target.value)} min="2" required />
                 </div>
               )}
+              {/* Audio file uploads */}
+              <div>
+                <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                  <Upload className="inline h-3 w-3 mr-1" />Full Track (WAV/FLAC/MP3)
+                </Label>
+                <Input
+                  ref={audioInputRef}
+                  type="file"
+                  accept="audio/mpeg,audio/wav,audio/flac,audio/aiff"
+                  className="mt-1.5 bg-surface border-border font-mono text-xs file:bg-gold/10 file:text-gold file:border-0 file:rounded file:px-3 file:py-1 file:mr-3 file:font-mono file:text-xs"
+                  onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+                  required
+                />
+                {audioFile && (
+                  <p className="mt-1 font-mono text-[10px] text-muted-foreground">{audioFile.name} ({(audioFile.size / 1024 / 1024).toFixed(1)} MB)</p>
+                )}
+              </div>
+              <div>
+                <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                  <Music className="inline h-3 w-3 mr-1" />Preview (30s, MP3/WAV — optional)
+                </Label>
+                <Input
+                  ref={previewInputRef}
+                  type="file"
+                  accept="audio/mpeg,audio/wav"
+                  className="mt-1.5 bg-surface border-border font-mono text-xs file:bg-gold/10 file:text-gold file:border-0 file:rounded file:px-3 file:py-1 file:mr-3 file:font-mono file:text-xs"
+                  onChange={(e) => setPreviewFile(e.target.files?.[0] || null)}
+                />
+                {previewFile && (
+                  <p className="mt-1 font-mono text-[10px] text-muted-foreground">{previewFile.name} ({(previewFile.size / 1024 / 1024).toFixed(1)} MB)</p>
+                )}
+              </div>
               <Button variant="gold" className="w-full text-sm" disabled={uploadMutation.isPending}>
-                {uploadMutation.isPending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading...</> : "Upload Track"}
+                {uploadMutation.isPending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading...</> : <><Upload className="h-4 w-4 mr-2" /> Upload Track</>}
               </Button>
             </form>
           </div>
