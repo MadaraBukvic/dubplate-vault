@@ -53,6 +53,7 @@ export type Database = {
           id: string
           role: Database["public"]["Enums"]["app_role"]
           social_links: Json | null
+          stripe_account_id: string | null
           updated_at: string
           user_id: string
         }
@@ -65,6 +66,7 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           social_links?: Json | null
+          stripe_account_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -77,6 +79,7 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           social_links?: Json | null
+          stripe_account_id?: string | null
           updated_at?: string
           user_id?: string
         }
