@@ -77,13 +77,18 @@ const Marketplace = () => {
             />
           </div>
           <Select value={genre} onValueChange={setGenre}>
-            <SelectTrigger className="w-40 font-mono text-xs bg-surface border-border">
+            <SelectTrigger className="w-48 font-mono text-xs bg-surface border-border">
               <SelectValue placeholder="Genre" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-60">
               <SelectItem value="all" className="font-mono text-xs">All Genres</SelectItem>
-              {genres.map((g) => (
-                <SelectItem key={g} value={g} className="font-mono text-xs">{g}</SelectItem>
+              {Object.entries(GENRE_CATEGORIES).map(([cat, subs]) => (
+                <SelectGroup key={cat}>
+                  <SelectLabel className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">{cat}</SelectLabel>
+                  {subs.map((g) => (
+                    <SelectItem key={g} value={g} className="font-mono text-xs">{g}</SelectItem>
+                  ))}
+                </SelectGroup>
               ))}
             </SelectContent>
           </Select>
