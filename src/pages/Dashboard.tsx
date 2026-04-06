@@ -351,6 +351,11 @@ const Dashboard = () => {
             )}
           </div>
         </div>
+
+        <div className="mt-12 max-w-2xl">
+          <h2 className="font-display text-2xl font-semibold text-foreground mb-6">Profile</h2>
+          <ProfileEditor />
+        </div>
       </div>
       <Footer />
     </div>
