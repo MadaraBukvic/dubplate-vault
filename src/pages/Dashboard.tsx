@@ -261,7 +261,19 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Genre</Label>
-                  <Input className="mt-1.5 bg-surface border-border font-mono text-sm" value={genre} onChange={(e) => setGenre(e.target.value)} required />
+                  <Select value={genre} onValueChange={setGenre}>
+                    <SelectTrigger className="mt-1.5 bg-surface border-border font-mono text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {Object.entries(GENRE_CATEGORIES).map(([cat, subs]) => (
+                        <SelectGroup key={cat}>
+                          <SelectLabel className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">{cat}</SelectLabel>
+                          {subs.map((g) => (
+                            <SelectItem key={g} value={g} className="font-mono text-xs">{g}</SelectItem>
+                          ))}
+                        </SelectGroup>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div>
