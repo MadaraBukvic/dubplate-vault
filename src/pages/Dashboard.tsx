@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, Music, DollarSign, BarChart3, Loader2, CreditCard, CheckCircle, AlertCircle } from "lucide-react";
+import ProfileEditor from "@/components/ProfileEditor";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -349,6 +350,11 @@ const Dashboard = () => {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="mt-12 max-w-2xl">
+          <h2 className="font-display text-2xl font-semibold text-foreground mb-6">Profile</h2>
+          <ProfileEditor />
         </div>
       </div>
       <Footer />
