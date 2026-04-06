@@ -140,8 +140,10 @@ const TrackDetail = () => {
                 </p>
               </div>
             </div>
-          </div>
         </div>
+
+        <TrackRatings trackId={track.id} />
+      </div>
       </div>
       <Footer />
     </div>
