@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Shield, Lock, Download } from "lucide-react";
-import heroImage from "@/assets/hero-vinyl.jpg";
+import heroImage from "@/assets/hero-bg.jpg";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TrackCard from "@/components/TrackCard";
