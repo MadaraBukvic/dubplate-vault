@@ -132,17 +132,28 @@ const ProfileEditor = () => {
             </Badge>
           ))}
         </div>
-        <div className="flex flex-wrap gap-1.5 mb-2">
-          {GENRE_OPTIONS.filter((g) => !genres.includes(g)).map((g) => (
-            <button
-              key={g}
-              type="button"
-              onClick={() => addGenre(g)}
-              className="rounded border border-border bg-surface px-2 py-1 font-mono text-[10px] text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-            >
-              + {g}
-            </button>
-          ))}
+        <div className="space-y-3 mb-3">
+          {Object.entries(GENRE_CATEGORIES).map(([category, subgenres]) => {
+            const available = subgenres.filter((g) => !genres.includes(g));
+            if (available.length === 0) return null;
+            return (
+              <div key={category}>
+                <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60 block mb-1.5">{category}</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {available.map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => addGenre(g)}
+                      className="rounded border border-border bg-surface px-2 py-1 font-mono text-[10px] text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                    >
+                      + {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
         <div className="flex gap-2">
           <Input
