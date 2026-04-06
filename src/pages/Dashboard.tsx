@@ -3,7 +3,8 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { GENRE_CATEGORIES } from "@/data/genres";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, Music, DollarSign, BarChart3, Loader2, CreditCard, CheckCircle, AlertCircle } from "lucide-react";
 import ProfileEditor from "@/components/ProfileEditor";
@@ -260,7 +261,19 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Genre</Label>
-                  <Input className="mt-1.5 bg-surface border-border font-mono text-sm" value={genre} onChange={(e) => setGenre(e.target.value)} required />
+                  <Select value={genre} onValueChange={setGenre}>
+                    <SelectTrigger className="mt-1.5 bg-surface border-border font-mono text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {Object.entries(GENRE_CATEGORIES).map(([cat, subs]) => (
+                        <SelectGroup key={cat}>
+                          <SelectLabel className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">{cat}</SelectLabel>
+                          {subs.map((g) => (
+                            <SelectItem key={g} value={g} className="font-mono text-xs">{g}</SelectItem>
+                          ))}
+                        </SelectGroup>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div>
