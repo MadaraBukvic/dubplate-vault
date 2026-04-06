@@ -10,10 +10,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2, User, X, Plus } from "lucide-react";
 
-const GENRE_OPTIONS = [
-  "Dubstep", "Drum & Bass", "House", "Techno", "Garage", "Grime",
-  "Jungle", "Breakbeat", "Bass Music", "Experimental", "Ambient", "Dub",
-];
+import { GENRE_CATEGORIES } from "@/data/genres";
 
 const ProfileEditor = () => {
   const { user } = useAuth();
