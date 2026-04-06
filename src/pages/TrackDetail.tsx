@@ -6,6 +6,7 @@ import { useParams, Link } from "react-router-dom";
 import { mockTracks } from "@/data/mockTracks";
 import { ArrowLeft, Shield, Loader2 } from "lucide-react";
 import WaveformPlayer from "@/components/WaveformPlayer";
+import TrackRatings from "@/components/TrackRatings";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
@@ -139,8 +140,10 @@ const TrackDetail = () => {
                 </p>
               </div>
             </div>
-          </div>
         </div>
+
+        <TrackRatings trackId={track.id} />
+      </div>
       </div>
       <Footer />
     </div>
