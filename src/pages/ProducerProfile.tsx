@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Music, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import FollowButton from "@/components/FollowButton";
 
 const SOCIAL_ICONS: Record<string, string> = {
   instagram: "Instagram",
@@ -141,6 +142,10 @@ const ProducerProfile = () => {
                 <span className="font-mono text-2xl font-bold text-primary">{totalSold}</span>
                 <span className="block font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Sold</span>
               </div>
+            </div>
+
+            <div className="mt-6">
+              <FollowButton producerId={id!} />
             </div>
           </div>
         </div>
