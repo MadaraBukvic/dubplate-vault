@@ -4,8 +4,12 @@ import TrackCard from "@/components/TrackCard";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { GENRE_CATEGORIES } from "@/data/genres";
-import { Search, Loader2, SlidersHorizontal } from "lucide-react";
+import { Search, Loader2, SlidersHorizontal, ChevronDown, X } from "lucide-react";
 import { useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -17,7 +21,7 @@ const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 const Marketplace = () => {
   const [search, setSearch] = useState("");
-  const [genre, setGenre] = useState("all");
+  const [genres, setGenres] = useState<string[]>([]);
   const [sort, setSort] = useState("newest");
   const [keyFilter, setKeyFilter] = useState("all");
   const [exclusivity, setExclusivity] = useState("all");
@@ -54,7 +58,7 @@ const Marketplace = () => {
   const filtered = useMemo(() => {
     let tracks = dbTracks;
     if (search) tracks = tracks.filter((t) => t.title.toLowerCase().includes(search.toLowerCase()) || (t.producer_name || "").toLowerCase().includes(search.toLowerCase()));
-    if (genre !== "all") tracks = tracks.filter((t) => t.genre === genre);
+    if (genres.length > 0) tracks = tracks.filter((t) => genres.includes(t.genre));
     if (keyFilter !== "all") tracks = tracks.filter((t) => t.key === keyFilter);
     if (exclusivity !== "all") tracks = tracks.filter((t) => t.exclusivity_type === exclusivity);
     tracks = tracks.filter((t) => t.bpm >= bpmRange[0] && t.bpm <= bpmRange[1]);
@@ -62,9 +66,22 @@ const Marketplace = () => {
     if (sort === "price-desc") tracks = [...tracks].sort((a, b) => b.price_eur - a.price_eur);
     if (sort === "bpm") tracks = [...tracks].sort((a, b) => a.bpm - b.bpm);
     return tracks;
-  }, [search, genre, sort, keyFilter, exclusivity, bpmRange, dbTracks]);
+  }, [search, genres, sort, keyFilter, exclusivity, bpmRange, dbTracks]);
 
-  const activeFilterCount = [genre !== "all", keyFilter !== "all", exclusivity !== "all", bpmRange[0] !== 60 || bpmRange[1] !== 200].filter(Boolean).length;
+  const activeFilterCount = [genres.length > 0, keyFilter !== "all", exclusivity !== "all", bpmRange[0] !== 60 || bpmRange[1] !== 200].filter(Boolean).length;
+
+  const toggleGenre = (g: string) => {
+    setGenres((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]));
+  };
+
+  const toggleCategory = (subs: string[]) => {
+    const allSelected = subs.every((s) => genres.includes(s));
+    setGenres((prev) =>
+      allSelected
+        ? prev.filter((g) => !subs.includes(g))
+        : Array.from(new Set([...prev, ...subs])),
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -108,28 +125,113 @@ const Marketplace = () => {
           </Select>
         </div>
 
+        {/* Selected genre chips */}
+        {genres.length > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            {genres.map((g) => (
+              <Badge
+                key={g}
+                variant="outline"
+                className="font-mono text-[10px] uppercase tracking-wider border-primary/30 bg-primary/10 text-primary gap-1.5 pr-1.5"
+              >
+                {g}
+                <button
+                  onClick={() => toggleGenre(g)}
+                  className="rounded-full hover:bg-primary/20 p-0.5"
+                  aria-label={`Remove ${g}`}
+                >
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              </Badge>
+            ))}
+            <button
+              onClick={() => setGenres([])}
+              className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
+
         {/* Filter panel */}
         {showFilters && (
           <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 rounded-lg border border-border bg-surface/50 p-4">
             {/* Genre */}
             <div className="space-y-1.5">
-              <label className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Genre</label>
-              <Select value={genre} onValueChange={setGenre}>
-                <SelectTrigger className="w-full font-mono text-xs bg-surface border-border">
-                  <SelectValue placeholder="Genre" />
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  <SelectItem value="all" className="font-mono text-xs">All Genres</SelectItem>
-                  {Object.entries(GENRE_CATEGORIES).map(([cat, subs]) => (
-                    <SelectGroup key={cat}>
-                      <SelectLabel className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">{cat}</SelectLabel>
-                      {subs.map((g) => (
-                        <SelectItem key={g} value={g} className="font-mono text-xs">{g}</SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ))}
-                </SelectContent>
-              </Select>
+              <label className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                Genres{genres.length > 0 && ` (${genres.length})`}
+              </label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-border bg-surface px-3 py-2 font-mono text-xs text-foreground"
+                  >
+                    <span className="truncate">
+                      {genres.length === 0
+                        ? "All Genres"
+                        : `${genres.length} selected`}
+                    </span>
+                    <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-72 p-0 bg-popover border-border">
+                  <div className="flex items-center justify-between border-b border-border px-3 py-2">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {genres.length} selected
+                    </span>
+                    {genres.length > 0 && (
+                      <button
+                        onClick={() => setGenres([])}
+                        className="font-mono text-[10px] uppercase tracking-wider text-primary hover:underline"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  <ScrollArea className="h-72">
+                    <div className="p-2">
+                      {Object.entries(GENRE_CATEGORIES).map(([cat, subs]) => {
+                        const allSelected = subs.every((s) => genres.includes(s));
+                        const someSelected = subs.some((s) => genres.includes(s));
+                        return (
+                          <div key={cat} className="mb-3">
+                            <button
+                              type="button"
+                              onClick={() => toggleCategory(subs)}
+                              className="mb-1 flex w-full items-center justify-between px-2 py-1 text-left"
+                            >
+                              <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/80">
+                                {cat}
+                              </span>
+                              <span className="font-mono text-[9px] text-primary">
+                                {allSelected ? "Unselect all" : someSelected ? "Select all" : "Select all"}
+                              </span>
+                            </button>
+                            <div className="space-y-0.5">
+                              {subs.map((g) => {
+                                const checked = genres.includes(g);
+                                return (
+                                  <label
+                                    key={g}
+                                    className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-accent"
+                                  >
+                                    <Checkbox
+                                      checked={checked}
+                                      onCheckedChange={() => toggleGenre(g)}
+                                    />
+                                    <span className="font-mono text-xs text-foreground">{g}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Key */}
