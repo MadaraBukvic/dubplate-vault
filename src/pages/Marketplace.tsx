@@ -125,6 +125,34 @@ const Marketplace = () => {
           </Select>
         </div>
 
+        {/* Selected genre chips */}
+        {genres.length > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            {genres.map((g) => (
+              <Badge
+                key={g}
+                variant="outline"
+                className="font-mono text-[10px] uppercase tracking-wider border-primary/30 bg-primary/10 text-primary gap-1.5 pr-1.5"
+              >
+                {g}
+                <button
+                  onClick={() => toggleGenre(g)}
+                  className="rounded-full hover:bg-primary/20 p-0.5"
+                  aria-label={`Remove ${g}`}
+                >
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              </Badge>
+            ))}
+            <button
+              onClick={() => setGenres([])}
+              className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
+
         {/* Filter panel */}
         {showFilters && (
           <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 rounded-lg border border-border bg-surface/50 p-4">
